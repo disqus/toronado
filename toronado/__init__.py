@@ -77,8 +77,12 @@ def inline(tree):
     rules = {}
 
     # Get all stylesheets from the document.
-    stylesheets = CSSSelector('style:not([inline="false"])')(tree)
+    stylesheets = CSSSelector('style')(tree)
     for stylesheet in stylesheets:
+        if stylesheet.attrib.get('inline') == 'false':
+            del stylesheet.attrib['inline']
+            continue
+
         for rule in itertools.ifilter(is_style_rule, cssutils.parseString(stylesheet.text)):
             properties = dict([(property.name, property.value) for property in rule.style])
             # XXX: This doesn't handle selectors with odd multiple whitespace.
@@ -87,6 +91,8 @@ def inline(tree):
                 if rule is None:
                     rule = rules[selector] = Rule(selector)
                 rule.update(properties)
+
+        stylesheet.getparent().remove(stylesheet)
 
     # Collect all nodes matching our style rules.
     nodes = defaultdict(list)

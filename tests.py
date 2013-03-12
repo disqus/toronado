@@ -116,6 +116,27 @@ class InlineTestCase(TestCase):
             'font-weight': 'bold',
         })
 
+    def test_removes_compiled_styles(self):
+        tree = html.document_fromstring("""
+            <html>
+            <head>
+                <style type="text/css">
+                    h1 { font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <h1>Hello, world.</h1>
+            </body>
+            </html>
+        """)
+
+        inline(tree)
+
+        heading, = tree.cssselect('h1')
+        self.assertEqual(heading.attrib['style'], 'font-weight: bold')
+
+        self.assertEqual(len(tree.cssselect('style')), 0)
+
     def test_skips_inline_false(self):
         tree = html.document_fromstring("""
             <html>
@@ -137,6 +158,9 @@ class InlineTestCase(TestCase):
 
         heading, = tree.cssselect('h1')
         self.assertEqual(heading.attrib['style'], 'font-weight: bold')
+
+        stylesheet, = tree.cssselect('style')
+        self.assertNotIn('inline', stylesheet.attrib)
 
 
 class ParserTestCase(TestCase):
