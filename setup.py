@@ -23,13 +23,13 @@ tests_require = [
 ]
 
 setup_requires = []
-if 'nosetests' in sys.argv:
+if 'nosetests' in sys.argv[1:]:
     setup_requires.append('nose')
 
 setup(
     name='toronado',
-    version='0.0.0',
-    author='ted kaemming, DISQUS',
+    version='0.0.1',
+    author='ted kaemming, disqus',
     author_email='ted@disqus.com',
     packages=find_packages(exclude=('tests',)),
     install_requires=install_requires,
@@ -37,4 +37,5 @@ setup(
     test_suite='nose.collector',
     setup_requires=setup_requires,
     zip_safe=False,
+    license='Apache License 2.0',
 )
