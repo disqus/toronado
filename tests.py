@@ -163,11 +163,11 @@ class ParserTestCase(TestCase):
         tree = etree.fromstring(self.document)
         self.assertInlines(tree)
 
+    def test_html(self):
+        tree = html.document_fromstring(self.document)
+        self.assertInlines(tree)
+
     @unittest2.skipIf(soupparser is None, 'BeautifulSoup is not installed')
     def test_beautifulsoup(self):
         tree = soupparser.fromstring(self.document)
-        self.assertInlines(tree)
-
-    def test_html5lib(self):
-        tree = html.document_fromstring(self.document)
         self.assertInlines(tree)
