@@ -1,8 +1,14 @@
 import unittest2
 from exam import Exam, fixture
-from lxml import html
+from lxml import etree, html
+from lxml.cssselect import CSSSelector
 
 from toronado import Rule, Properties, inline
+
+try:
+    from lxml.html import soupparser
+except ImportError:
+    soupparser = None
 
 
 class TestCase(Exam, unittest2.TestCase):
@@ -131,3 +137,37 @@ class InlineTestCase(TestCase):
 
         heading, = tree.cssselect('h1')
         self.assertEqual(heading.attrib['style'], 'font-weight: bold')
+
+
+class ParserTestCase(TestCase):
+    document = """
+        <html>
+        <head>
+            <style type="text/css">
+                h1 { color: red; }
+            </style>
+        </head>
+        <body>
+            <h1>Hello, world.</h1>
+        </body>
+        </html>
+    """
+
+    def assertInlines(self, tree):
+        inline(tree)
+
+        heading, = CSSSelector('h1')(tree)
+        self.assertEqual(heading.attrib['style'], 'color: red')
+
+    def test_etree(self):
+        tree = etree.fromstring(self.document)
+        self.assertInlines(tree)
+
+    @unittest2.skipIf(soupparser is None, 'BeautifulSoup is not installed')
+    def test_beautifulsoup(self):
+        tree = soupparser.fromstring(self.document)
+        self.assertInlines(tree)
+
+    def test_html5lib(self):
+        tree = html.document_fromstring(self.document)
+        self.assertInlines(tree)
