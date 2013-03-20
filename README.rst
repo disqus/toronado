@@ -6,7 +6,7 @@ Fast lxml-based CSS stylesheet inliner.
 Usage
 ~~~~~
 
-..
+.. code::
 
     >>> from lxml import html
     >>> from toronado import inline
