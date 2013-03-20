@@ -74,6 +74,19 @@ def is_style_rule(rule):
 
 
 def inline(tree):
+    """
+    Inlines all of the styles within this stylesheet into their matching HTML
+    elements. This modifies the original tree in-place, removing all style tags
+    and updating the nodes.
+
+    To prevent a ``<style>`` tag from being inlined, add an ``inline="false"``
+    attribute::
+
+        <style type="text/css" inline="false">
+            /* Any rules contained within this tag will not be inlined. */
+        </style>
+
+    """
     rules = {}
 
     # Get all stylesheets from the document.
