@@ -3,6 +3,14 @@ toronado
 
 Fast lxml-based CSS stylesheet inliner.
 
+Installation
+~~~~~~~~~~~~
+
+This package is hosted on `PyPI <https://pypi.python.org/pypi/toronado>`_ and
+can be installed using ``pip`` or ``easy_install``::
+
+    pip install toronado
+
 Usage
 ~~~~~
 
