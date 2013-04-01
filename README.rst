@@ -30,3 +30,15 @@ Usage
     >>> inline(tree)
     >>> print html.tostring(tree)
     <html><head></head><body><h1 style="color: red">Hello, world.</h1></body></html>
+
+Command Line Usage
+------------------
+
+To inline a file directly from the command line, you can use the following::
+
+    python -m toronado input.html
+
+The inlined HTML will be printed to your shell's ``stdout`` stream, and can
+also be redirected to a file::
+
+    python -m toronado input.html > output.html
