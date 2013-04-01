@@ -28,7 +28,7 @@ if 'nosetests' in sys.argv[1:]:
 
 setup(
     name='toronado',
-    version='0.0.1',
+    version='0.0.2',
     author='ted kaemming, disqus',
     author_email='ted@disqus.com',
     packages=find_packages(exclude=('tests',)),
