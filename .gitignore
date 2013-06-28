@@ -1,3 +1,4 @@
 *.egg*
 *.py[co]
+.env
 dist/
