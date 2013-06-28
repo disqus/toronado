@@ -1,4 +1,5 @@
 import itertools
+import logging
 import string
 from collections import defaultdict
 
@@ -89,6 +90,8 @@ def inline(tree):
     """
     rules = {}
 
+    stylesheet_parser = cssutils.CSSParser(log=logging.getLogger('%s.cssutils' % __name__))
+
     # Get all stylesheets from the document.
     stylesheets = CSSSelector('style')(tree)
     for stylesheet in stylesheets:
@@ -96,7 +99,7 @@ def inline(tree):
             del stylesheet.attrib['inline']
             continue
 
-        for rule in itertools.ifilter(is_style_rule, cssutils.parseString(stylesheet.text)):
+        for rule in itertools.ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
             properties = dict([(property.name, property.value) for property in rule.style])
             # XXX: This doesn't handle selectors with odd multiple whitespace.
             for selector in map(string.strip, rule.selectorText.split(',')):
