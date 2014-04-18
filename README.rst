@@ -14,10 +14,10 @@ can be installed using ``pip`` or ``easy_install``::
 Usage
 ~~~~~
 
-.. code::
+.. code:: python
 
+    >>> import toronado
     >>> from lxml import html
-    >>> from toronado import inline
     >>> document = """<html>
     ... <head>
     ...     <style type="text/css">
@@ -26,9 +26,7 @@ Usage
     ... </head>
     ... <body><h1>Hello, world.</h1></body>
     ... </html>"""
-    >>> tree = html.document_fromstring(document)
-    >>> inline(tree)
-    >>> print html.tostring(tree)
+    >>> print toronado.from_string(document)
     <html><head></head><body><h1 style="color: red">Hello, world.</h1></body></html>
 
 Command Line Usage
