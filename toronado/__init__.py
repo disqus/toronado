@@ -3,17 +3,33 @@ from __future__ import absolute_import, unicode_literals, print_function
 import cssutils
 import itertools
 import logging
-import string
+import sys
 
 from collections import defaultdict
 from lxml import html
 from lxml.cssselect import CSSSelector
+
+PY3 = sys.version_info[0] == 3
+
+if PY3:
+    text_type = str
+    ifilter = filter
+else:
+    text_type = unicode
+    ifilter = __import__('itertools').ifilter
 
 
 class Properties(dict):
     """
     A container for CSS properties.
     """
+    if PY3:
+        def __str__(self):
+            return self.__unicode__()
+    else:
+        def __str__(self):
+            return self.__unicode__().encode('utf8')
+
     def __unicode__(self):
         """
         Renders the properties as a string suitable for inclusion as a HTML tag
@@ -23,7 +39,10 @@ class Properties(dict):
 
     @classmethod
     def from_string(cls, value):
-        rules = [map(string.strip, property.split(':')) for property in value.split(';') if property]
+        rules = [
+            map(text_type.strip, property.split(':'))
+            for property in value.split(';') if property
+        ]
         return Properties(rules)
 
 
@@ -45,11 +64,14 @@ class Rule(object):
     def __repr__(self):
         return '<Rule: %s>' % self.selector.css
 
-    def __cmp__(self, other):
-        """
-        Compares two rules by specificity.
-        """
-        return cmp(self.specificity, other.specificity)
+    def __lt__(self, other):
+        return self.specificity < other.specificity
+
+    def __eq__(self, other):
+        return self.specificity == other.specificity
+
+    def __hash__(self):
+        return hash(self.specificity)
 
     def update(self, properties):
         """
@@ -102,10 +124,10 @@ def inline(tree):
             del stylesheet.attrib['inline']
             continue
 
-        for rule in itertools.ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
+        for rule in ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
             properties = dict([(property.name, property.value) for property in rule.style])
             # XXX: This doesn't handle selectors with odd multiple whitespace.
-            for selector in map(string.strip, rule.selectorText.split(',')):
+            for selector in map(text_type.strip, rule.selectorText.split(',')):
                 rule = rules.get(selector, None)
                 if rule is None:
                     rule = rules[selector] = Rule(selector)
@@ -115,12 +137,12 @@ def inline(tree):
 
     # Collect all nodes matching our style rules.
     nodes = defaultdict(list)
-    for rule in rules.itervalues():
+    for rule in rules.values():
         for node in rule.selector(tree):
             nodes[node].append(rule)
 
     # Apply all styles to our collected elements.
-    for node, rules in nodes.iteritems():
+    for node, rules in nodes.items():
         properties = Rule.combine(rules)
 
         # If this node already has a style attribute, we need to apply those
