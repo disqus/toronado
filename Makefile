@@ -1,5 +1,5 @@
 test:
-	pip install "file://`pwd`#egg=toronado[tests]" --use-mirrors
+	pip install --use-mirrors -e .[tests]
 	py.test tests.py
 
 .PHONY: test
