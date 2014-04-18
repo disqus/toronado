@@ -1,9 +1,12 @@
+from __future__ import absolute_import, unicode_literals, print_function
+
+import cssutils
 import itertools
 import logging
 import string
-from collections import defaultdict
 
-import cssutils
+from collections import defaultdict
+from lxml import html
 from lxml.cssselect import CSSSelector
 
 
@@ -127,3 +130,9 @@ def inline(tree):
             properties.update(Properties.from_string(style_attr))
 
         node.attrib['style'] = u'%s' % properties
+
+
+def from_string(string):
+    tree = html.document_fromstring(string)
+    inline(tree)
+    return html.tostring(tree)
