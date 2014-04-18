@@ -1,4 +1,7 @@
-import unittest2
+import pytest
+import sys
+import unittest
+
 from exam import Exam, fixture
 from lxml import etree, html
 from lxml.cssselect import CSSSelector
@@ -11,7 +14,7 @@ except ImportError:
     soupparser = None
 
 
-class TestCase(Exam, unittest2.TestCase):
+class TestCase(Exam, unittest.TestCase):
     pass
 
 
@@ -52,7 +55,7 @@ class PropertiesTestCase(TestCase):
             'color: red; font-weight: bold',
         ))
 
-        self.assertIn(u'%s' % properties, expected)
+        self.assertIn(u'%s' % (properties,), expected)
 
     def test_from_string(self):
         properties = Properties.from_string('color: red; font-weight: bold')
@@ -191,7 +194,8 @@ class ParserTestCase(TestCase):
         tree = html.document_fromstring(self.document)
         self.assertInlines(tree)
 
-    @unittest2.skipIf(soupparser is None, 'BeautifulSoup is not installed')
+    @pytest.mark.skipif(soupparser is None,
+                        reason='BeautifulSoup is not installed')
     def test_beautifulsoup(self):
         tree = soupparser.fromstring(self.document)
         self.assertInlines(tree)
