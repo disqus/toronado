@@ -3,7 +3,7 @@ from exam import Exam, fixture
 from lxml import etree, html
 from lxml.cssselect import CSSSelector
 
-from toronado import Rule, Properties, inline
+from toronado import Rule, Properties, inline, from_string
 
 try:
     from lxml.html import soupparser
@@ -194,4 +194,9 @@ class ParserTestCase(TestCase):
     @unittest2.skipIf(soupparser is None, 'BeautifulSoup is not installed')
     def test_beautifulsoup(self):
         tree = soupparser.fromstring(self.document)
+        self.assertInlines(tree)
+
+    def test_from_string(self):
+        result = from_string(self.document)
+        tree = etree.fromstring(result)
         self.assertInlines(tree)
