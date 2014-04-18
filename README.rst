@@ -3,6 +3,9 @@ toronado
 
 Fast lxml-based CSS stylesheet inliner.
 
+.. image:: https://travis-ci.org/disqus/toronado.svg?branch=master
+    :target: https://travis-ci.org/disqus/toronado
+
 Installation
 ~~~~~~~~~~~~
 
