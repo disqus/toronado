@@ -1,5 +1,5 @@
 test:
-	pip install --use-mirrors -e .[tests]
+	pip install -e .[tests]
 	py.test tests.py
 
 .PHONY: test
