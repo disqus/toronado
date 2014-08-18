@@ -151,7 +151,7 @@ def inline(tree):
         if style_attr is not None:
             properties.update(Properties.from_string(style_attr))
 
-        node.attrib['style'] = u'%s' % properties
+        node.attrib['style'] = '%s' % properties
 
 
 def from_string(string):

@@ -31,7 +31,7 @@ Usage
     ... </head>
     ... <body><h1>Hello, world.</h1></body>
     ... </html>"""
-    >>> print toronado.from_string(document)
+    >>> print(toronado.from_string(document))
     <html><head></head><body><h1 style="color: red">Hello, world.</h1></body></html>
 
 Command Line Usage
