@@ -22,7 +22,6 @@ Usage
 .. code:: python
 
     >>> import toronado
-    >>> from lxml import html
     >>> document = """<html>
     ... <head>
     ...     <style type="text/css">
