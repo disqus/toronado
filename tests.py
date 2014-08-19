@@ -55,7 +55,7 @@ class PropertiesTestCase(TestCase):
             'color: red; font-weight: bold',
         ))
 
-        self.assertIn(u'%s' % (properties,), expected)
+        self.assertIn('%s' % (properties,), expected)
 
     def test_from_string(self):
         properties = Properties.from_string('color: red; font-weight: bold')
