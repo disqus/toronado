@@ -6,7 +6,7 @@ Fast lxml-based CSS stylesheet inliner.
 .. image:: https://travis-ci.org/disqus/toronado.svg?branch=master
     :target: https://travis-ci.org/disqus/toronado
 
-Tested against Python 2.7, 3.3, and 3.4.
+Tested against Python 2.7, 3.2, 3.3, and 3.4.
 
 Installation
 ~~~~~~~~~~~~
