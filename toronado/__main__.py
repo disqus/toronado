@@ -14,4 +14,4 @@ except ValueError:
 
 tree = lxml.html.parse(open(infile, 'r'))
 toronado.inline(tree)
-print lxml.html.tostring(tree, pretty_print=True)
+print(lxml.html.tostring(tree, pretty_print=True))
