@@ -113,6 +113,15 @@ def inline(tree):
         </style>
 
     """
+
+    def _prio_value(p):
+        """
+        Format value and priority of a :class:`cssutils.css.Property`.
+        """
+        if p.priority:
+            return "%s ! %s" % (p.value, p.priority)
+        return p.value
+
     rules = {}
 
     stylesheet_parser = cssutils.CSSParser(log=logging.getLogger('%s.cssutils' % __name__))
@@ -125,7 +134,7 @@ def inline(tree):
             continue
 
         for rule in ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
-            properties = dict([(property.name, property.value) for property in rule.style])
+            properties = dict([(property.name, _prio_value(property)) for property in rule.style])
             # XXX: This doesn't handle selectors with odd multiple whitespace.
             for selector in map(text_type.strip, rule.selectorText.split(',')):
                 rule = rules.get(selector, None)

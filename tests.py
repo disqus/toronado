@@ -165,6 +165,25 @@ class InlineTestCase(TestCase):
         stylesheet, = tree.cssselect('style')
         self.assertNotIn('inline', stylesheet.attrib)
 
+    def test_important_styles(self):
+        tree = html.document_fromstring("""
+            <html>
+            <head>
+                <style type="text/css">
+                    h1 { color: red !important; }
+                </style>
+            </head>
+            <body>
+                <h1>Hello, world.</h1>
+            </body>
+            </html>
+        """)
+
+        inline(tree)
+
+        heading = tree.cssselect('h1')[0]
+        self.assertEqual(heading.attrib['style'], 'color: red ! important')
+
 
 class ParserTestCase(TestCase):
     document = """
