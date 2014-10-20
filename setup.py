@@ -17,7 +17,7 @@ tests_require = [
 
 setup(
     name='toronado',
-    version='0.0.5',
+    version='0.0.6',
     author='ted kaemming, disqus',
     author_email='ted@disqus.com',
     packages=find_packages(exclude=('tests',)),
