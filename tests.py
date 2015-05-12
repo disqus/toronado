@@ -184,6 +184,20 @@ class InlineTestCase(TestCase):
         heading = tree.cssselect('h1')[0]
         self.assertEqual(heading.attrib['style'], 'color: red ! important')
 
+    def test_empty_styles(self):
+        tree = html.document_fromstring("""
+            <html>
+            <head>
+                <style type="text/css"></style>
+            </head>
+            <body>
+                <h1>Hello, world.</h1>
+            </body>
+            </html>
+        """)
+
+        inline(tree)
+
 
 class ParserTestCase(TestCase):
     document = """
