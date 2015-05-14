@@ -133,6 +133,9 @@ def inline(tree):
             del stylesheet.attrib['inline']
             continue
 
+        if not stylesheet.text:
+            continue
+
         for rule in ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
             properties = dict([(property.name, _prio_value(property)) for property in rule.style])
             # XXX: This doesn't handle selectors with odd multiple whitespace.
