@@ -199,6 +199,15 @@ class InlineTestCase(TestCase):
         inline(tree)
 
 
+def test_includes_doctype():
+    doctype = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+    result = from_string("""
+        {doctype}
+        <html xmlns="http://www.w3.org/1999/xhtml"></html>
+    """.format(doctype=doctype))
+    assert doctype in result
+
+
 class ParserTestCase(TestCase):
     document = """
         <html>
