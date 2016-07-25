@@ -44,3 +44,11 @@ The inlined HTML will be printed to your shell's ``stdout`` stream, and can
 also be redirected to a file::
 
     python -m toronado input.html > output.html
+
+Known Issues
+------------
+
+* Expansion of some shorthand properties is not fully implemented (`margin` and
+  `padding` are supported, however.) Mixing shorthand properties and specific
+  properties such as `font` and `font-size` may lead to unexpected inheritance
+  results. (See GH-19 for details.)

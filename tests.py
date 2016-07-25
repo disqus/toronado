@@ -6,7 +6,13 @@ from exam import Exam, fixture
 from lxml import etree, html
 from lxml.cssselect import CSSSelector
 
-from toronado import Rule, Properties, inline, from_string
+from toronado import (
+    Properties,
+    Rule,
+    expand_shorthand_box_property,
+    from_string,
+    inline,
+)
 
 try:
     from lxml.html import soupparser
@@ -16,6 +22,36 @@ except ImportError:
 
 class TestCase(Exam, unittest.TestCase):
     pass
+
+
+def test_expand_shorthand_box_property():
+    assert expand_shorthand_box_property('margin', '1px') == {
+        'margin-top': '1px',
+        'margin-right': '1px',
+        'margin-bottom': '1px',
+        'margin-left': '1px',
+    }
+
+    assert expand_shorthand_box_property('margin', '1px 2px') == {
+        'margin-top': '1px',
+        'margin-right': '2px',
+        'margin-bottom': '1px',
+        'margin-left': '2px',
+    }
+
+    assert expand_shorthand_box_property('margin', '1px 2px 3px') == {
+        'margin-top': '1px',
+        'margin-right': '2px',
+        'margin-bottom': '3px',
+        'margin-left': '2px',
+    }
+
+    assert expand_shorthand_box_property('margin', '1px 2px 3px 4px') == {
+        'margin-top': '1px',
+        'margin-right': '2px',
+        'margin-bottom': '3px',
+        'margin-left': '4px',
+    }
 
 
 class RuleTestCase(TestCase):
@@ -64,11 +100,12 @@ class PropertiesTestCase(TestCase):
             'font-weight': 'bold',
         })
 
-    def test_from_string_cleans_whitespace(self):
-        properties = Properties.from_string('color : red;\nfont-weight: bold ;')
+        properties = Properties.from_string('padding: 0 10px')
         self.assertEqual(properties, {
-            'color': 'red',
-            'font-weight': 'bold',
+            'padding-top': '0',
+            'padding-right': '10px',
+            'padding-bottom': '0',
+            'padding-left': '10px',
         })
 
 

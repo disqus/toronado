@@ -1,6 +1,5 @@
 from __future__ import absolute_import, unicode_literals, print_function
 
-import cssutils
 import itertools
 import logging
 import sys
@@ -8,6 +7,12 @@ import sys
 from collections import defaultdict
 from lxml import html
 from lxml.cssselect import CSSSelector
+from cssutils import CSSParser
+from cssutils.css import (
+    CSSRule,
+    CSSStyleDeclaration,
+    Selector,
+)
 
 PY3 = sys.version_info[0] == 3
 
@@ -17,6 +22,89 @@ if PY3:
 else:
     text_type = unicode
     ifilter = __import__('itertools').ifilter
+
+
+logger = logging.getLogger(__name__)
+
+
+def expand_shorthand_box_property(name, value):
+    bits = value.split()
+    size = len(bits)
+    if size == 1:
+        result = (bits[0],) * 4
+    elif size == 2:
+        result = (bits[0], bits[1],) * 2
+    elif size == 3:
+        result = (bits[0], bits[1], bits[2], bits[1])
+    elif size == 4:
+        result = tuple(bits)
+    else:
+        raise ValueError('incorrect number of values for box rule: %s' % size)
+
+    sides = ('top', 'right', 'bottom', 'left')
+    return {'%s-%s' % (name, side): value for side, value in zip(sides, result)}
+
+
+def rewrite_margin_property_value(value):
+    return expand_box_rule('margin', value)
+
+
+def rewrite_padding_property_value(value):
+    return expand_box_rule('padding', value)
+
+
+rewrite_map = {
+    'margin': expand_shorthand_box_property,
+    'padding': expand_shorthand_box_property,
+}
+
+
+def warn_unsupported_shorthand_property(name, value):
+    logger.warning(
+        "CSS shorthand syntax expansion is not supported for %r. Mixing "
+        "shorthand and specific property values (e.g. `font` and `font-size`) "
+        "may lead to unexpected results.",
+        name,
+    )
+    return {name: value}
+
+
+unsupported_shorthand_properties = (
+    'animation',
+    'background',
+    'border',
+    'border-bottom',
+    'border-color',
+    'border-left',
+    'border-radius',
+    'border-right',
+    'border-style',
+    'border-top',
+    'border-width',
+    'font',
+    'list-style',
+    'transform',
+    'transition',
+)
+
+
+for property in unsupported_shorthand_properties:
+    rewrite_map[property] = warn_unsupported_shorthand_property
+
+
+def rewrite_property(property):
+    result = rewrite_map.get(
+        property.name,
+        lambda name, value: {
+            name: value,
+        }
+    )(property.name, property.value)
+
+    if property.priority:
+        for key, value in result.items():
+            result[key] = "%s ! %s" % (value, property.priority)
+
+    return result
 
 
 class Properties(dict):
@@ -39,11 +127,10 @@ class Properties(dict):
 
     @classmethod
     def from_string(cls, value):
-        rules = [
-            map(text_type.strip, property.split(':'))
-            for property in value.split(';') if property
-        ]
-        return Properties(rules)
+        values = {}
+        for property in CSSStyleDeclaration(value).getProperties():
+            values.update(rewrite_property(property))
+        return cls(values)
 
 
 class Rule(object):
@@ -59,7 +146,7 @@ class Rule(object):
             self.properties.update(properties)
 
         # NOTE: This should be available by `CSSSelector`?
-        self.specificity = cssutils.css.Selector(selector).specificity
+        self.specificity = Selector(selector).specificity
 
     def __repr__(self):
         return '<Rule: %s>' % self.selector.css
@@ -96,7 +183,7 @@ def is_style_rule(rule):
     """
     Returns if a :class:`cssutils.css.CSSRule` is a style rule (not a comment.)
     """
-    return rule.type == cssutils.css.CSSRule.STYLE_RULE
+    return rule.type == CSSRule.STYLE_RULE
 
 
 def inline(tree):
@@ -113,18 +200,9 @@ def inline(tree):
         </style>
 
     """
-
-    def _prio_value(p):
-        """
-        Format value and priority of a :class:`cssutils.css.Property`.
-        """
-        if p.priority:
-            return "%s ! %s" % (p.value, p.priority)
-        return p.value
-
     rules = {}
 
-    stylesheet_parser = cssutils.CSSParser(log=logging.getLogger('%s.cssutils' % __name__))
+    stylesheet_parser = CSSParser(log=logging.getLogger('%s.cssutils' % __name__))
 
     # Get all stylesheets from the document.
     stylesheets = CSSSelector('style')(tree)
@@ -137,7 +215,10 @@ def inline(tree):
             continue
 
         for rule in ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
-            properties = dict([(property.name, _prio_value(property)) for property in rule.style])
+            properties = {}
+            for property in rule.style:
+                properties.update(rewrite_property(property))
+
             # XXX: This doesn't handle selectors with odd multiple whitespace.
             for selector in map(text_type.strip, rule.selectorText.split(',')):
                 rule = rules.get(selector, None)
