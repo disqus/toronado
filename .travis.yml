@@ -1,7 +1,14 @@
 language: python
 python:
-    - "2.7"
-    - "3.2"
-    - "3.3"
-    - "3.4"
+- '2.7'
+- '3.3'
+- '3.4'
+- '3.5'
 script: make test
+deploy:
+  provider: pypi
+  user: disqus
+  on:
+    tags: true
+  password:
+    secure: a+LqNs4rqtBkrK8wvKgxpEHC11QVhJrCkLPStYJ2eJHD3GMkduM5qq7SJBgP+TLX+PMLHd7SJBP6yDdhf6bikKUOJL5mPA9Qi0u2eZm7JUiABrtkfv68sbHvmlOs3TfTx+YaNkLgS4ICmwL80IuTwwwbrhL5ffS5fiDk3UVVHbY=
