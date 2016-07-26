@@ -136,9 +136,10 @@ class Rule(object):
     """
     Represents a CSS rule (combination of a CSS selector and style properties.)
     """
-    __slots__ = ('selector', 'properties', 'specificity')
+    __slots__ = ('id', 'selector', 'properties', 'specificity')
 
-    def __init__(self, selector, properties=None):
+    def __init__(self, id, selector, properties=None):
+        self.id = id
         self.selector = CSSSelector(selector)
         self.properties = Properties()
         if properties is not None:
@@ -151,10 +152,10 @@ class Rule(object):
         return '<Rule: %s>' % self.selector.css
 
     def __lt__(self, other):
-        return self.specificity < other.specificity
+        return (self.specificity, self.id) < (other.specificity, other.id)
 
     def __eq__(self, other):
-        return self.specificity == other.specificity
+        return (self.specificity, self.id) == (other.specificity, other.id)
 
     def __hash__(self):
         return hash(self.specificity)
@@ -199,7 +200,8 @@ def inline(tree):
         </style>
 
     """
-    rules = {}
+    rules = defaultdict(list)
+    rule_id_sequence = itertools.count()
 
     stylesheet_parser = CSSParser(log=logging.getLogger('%s.cssutils' % __name__))
 
@@ -220,18 +222,20 @@ def inline(tree):
 
             # XXX: This doesn't handle selectors with odd multiple whitespace.
             for selector in map(text_type.strip, rule.selectorText.split(',')):
-                rule = rules.get(selector, None)
-                if rule is None:
-                    rule = rules[selector] = Rule(selector)
-                rule.update(properties)
+                rule = Rule(
+                    next(rule_id_sequence),
+                    selector,
+                    properties,
+                )
+                rules[rule.selector].append(rule)
 
         stylesheet.getparent().remove(stylesheet)
 
     # Collect all nodes matching our style rules.
     nodes = defaultdict(list)
-    for rule in rules.values():
-        for node in rule.selector(tree):
-            nodes[node].append(rule)
+    for selector, rs in rules.items():
+        for node in selector(tree):
+            nodes[node].extend(rs)
 
     # Apply all styles to our collected elements.
     for node, rules in nodes.items():

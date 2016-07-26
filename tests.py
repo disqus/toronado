@@ -58,17 +58,17 @@ def test_expand_shorthand_box_property():
 
 class RuleTestCase(TestCase):
     def test_compares_by_specificity(self):
-        self.assertGreater(Rule('#main'), Rule('div'))
-        self.assertEqual(Rule('div'), Rule('p'))
-        self.assertLess(Rule('div'), Rule('div.container'))
+        self.assertGreater(Rule(0, '#main'), Rule(0, 'div'))
+        self.assertEqual(Rule(0, 'div'), Rule(0 ,'p'))
+        self.assertLess(Rule(0, 'div'), Rule(0, 'div.container'))
 
     def test_combine_respects_specificity_rules(self):
         properties = Rule.combine((
-            Rule('h1', {
+            Rule(0, 'h1', {
                 'font-weight': 'bold',
                 'color': 'blue',
             }),
-            Rule('h1#primary', {
+            Rule(0, 'h1#primary', {
                 'color': 'red',
             }),
         ))
@@ -77,6 +77,18 @@ class RuleTestCase(TestCase):
         self.assertEqual(properties, {
             'font-weight': 'bold',
             'color': 'red',
+        })
+
+    def tests_combine_respects_ordering(self):
+        properties = Rule.combine((
+            Rule(1, 'h1', {'font-size': '10px', 'font-weight': 'bold'}),
+            Rule(2, 'h1', {'font-size': '20px'})
+        ))
+
+        self.assertIsInstance(properties, Properties)
+        self.assertEqual(properties, {
+            'font-weight': 'bold',
+            'font-size': '20px',
         })
 
 
