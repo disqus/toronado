@@ -27,46 +27,46 @@ else:
 logger = logging.getLogger(__name__)
 
 
-def expand_shorthand_box_property(name, value):
-    bits = value.split()
-    size = len(bits)
-    if size == 1:
-        result = (bits[0],) * 4
-    elif size == 2:
-        result = (bits[0], bits[1],) * 2
-    elif size == 3:
-        result = (bits[0], bits[1], bits[2], bits[1])
-    elif size == 4:
-        result = tuple(bits)
-    else:
-        raise ValueError('incorrect number of values for box rule: %s' % size)
-
+def expand_shorthand_box_property(template):
     sides = ('top', 'right', 'bottom', 'left')
-    return {'%s-%s' % (name, side): value for side, value in zip(sides, result)}
 
+    def expand_property(value):
+        bits = value.split()
+        size = len(bits)
+        if size == 1:
+            result = (bits[0],) * 4
+        elif size == 2:
+            result = (bits[0], bits[1],) * 2
+        elif size == 3:
+            result = (bits[0], bits[1], bits[2], bits[1])
+        elif size == 4:
+            result = tuple(bits)
+        else:
+            raise ValueError('incorrect number of values for box rule: %s' % size)
 
-def rewrite_margin_property_value(value):
-    return expand_box_rule('margin', value)
+        return {template.format(side): value for side, value in zip(sides, result)}
 
-
-def rewrite_padding_property_value(value):
-    return expand_box_rule('padding', value)
+    return expand_property
 
 
 rewrite_map = {
-    'margin': expand_shorthand_box_property,
-    'padding': expand_shorthand_box_property,
+    'margin': expand_shorthand_box_property('margin-{}'),
+    'padding': expand_shorthand_box_property('padding-{}'),
+    'border-width': expand_shorthand_box_property('border-{}-width'),
 }
 
 
-def warn_unsupported_shorthand_property(name, value):
-    logger.warning(
-        "CSS shorthand syntax expansion is not supported for %r. Mixing "
-        "shorthand and specific property values (e.g. `font` and `font-size`) "
-        "may lead to unexpected results.",
-        name,
-    )
-    return {name: value}
+def warn_unsupported_shorthand_property(property):
+    def expand_property(value):
+        logger.warning(
+            "CSS shorthand syntax expansion is not supported for %r. Mixing "
+            "shorthand and specific property values (e.g. `font` and `font-size`) "
+            "may lead to unexpected results.",
+            name,
+        )
+        return {name: value}
+
+    return expand_property
 
 
 unsupported_shorthand_properties = (
@@ -80,7 +80,6 @@ unsupported_shorthand_properties = (
     'border-right',
     'border-style',
     'border-top',
-    'border-width',
     'font',
     'list-style',
     'transform',
@@ -89,16 +88,16 @@ unsupported_shorthand_properties = (
 
 
 for property in unsupported_shorthand_properties:
-    rewrite_map[property] = warn_unsupported_shorthand_property
+    rewrite_map[property] = warn_unsupported_shorthand_property(property)
 
 
 def rewrite_property(property):
     result = rewrite_map.get(
         property.name,
-        lambda name, value: {
-            name: value,
+        lambda value: {
+            property.name: value,
         }
-    )(property.name, property.value)
+    )(property.value)
 
     if property.priority:
         for key, value in result.items():

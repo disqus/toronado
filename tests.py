@@ -25,28 +25,30 @@ class TestCase(Exam, unittest.TestCase):
 
 
 def test_expand_shorthand_box_property():
-    assert expand_shorthand_box_property('margin', '1px') == {
+    expand = expand_shorthand_box_property('margin-{}')
+
+    assert expand('1px') == {
         'margin-top': '1px',
         'margin-right': '1px',
         'margin-bottom': '1px',
         'margin-left': '1px',
     }
 
-    assert expand_shorthand_box_property('margin', '1px 2px') == {
+    assert expand('1px 2px') == {
         'margin-top': '1px',
         'margin-right': '2px',
         'margin-bottom': '1px',
         'margin-left': '2px',
     }
 
-    assert expand_shorthand_box_property('margin', '1px 2px 3px') == {
+    assert expand('1px 2px 3px') == {
         'margin-top': '1px',
         'margin-right': '2px',
         'margin-bottom': '3px',
         'margin-left': '2px',
     }
 
-    assert expand_shorthand_box_property('margin', '1px 2px 3px 4px') == {
+    assert expand('1px 2px 3px 4px') == {
         'margin-top': '1px',
         'margin-right': '2px',
         'margin-bottom': '3px',
