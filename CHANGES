@@ -1,3 +1,9 @@
+0.0.9
+-----
+
+- Break specificity ties by rule definition ordering.
+- Added expansion for `border-width` shorthand properties.
+
 0.0.8
 -----
 
