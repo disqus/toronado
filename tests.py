@@ -1,8 +1,7 @@
 import pytest
-import sys
 import unittest
 
-from exam import Exam, fixture
+from exam import Exam
 from lxml import etree, html
 from lxml.cssselect import CSSSelector
 
@@ -12,6 +11,7 @@ from toronado import (
     expand_shorthand_box_property,
     from_string,
     inline,
+    warn_unsupported_shorthand_property,
 )
 
 try:
@@ -56,10 +56,16 @@ def test_expand_shorthand_box_property():
     }
 
 
+def test_warn_unsupported_shorthand_property():
+    assert warn_unsupported_shorthand_property('font')('10px sans-serif') == {
+        'font': '10px sans-serif',
+    }
+
+
 class RuleTestCase(TestCase):
     def test_compares_by_specificity(self):
         self.assertGreater(Rule(0, '#main'), Rule(0, 'div'))
-        self.assertEqual(Rule(0, 'div'), Rule(0 ,'p'))
+        self.assertEqual(Rule(0, 'div'), Rule(0, 'p'))
         self.assertLess(Rule(0, 'div'), Rule(0, 'div.container'))
 
     def test_combine_respects_specificity_rules(self):

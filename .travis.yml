@@ -4,7 +4,9 @@ python:
 - '3.3'
 - '3.4'
 - '3.5'
-script: make test
+script:
+    - make test
+    - make lint
 deploy:
   provider: pypi
   user: disqus

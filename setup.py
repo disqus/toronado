@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 
 from setuptools import find_packages, setup
 
@@ -25,6 +24,9 @@ setup(
     install_requires=install_requires,
     tests_require=tests_require,
     extras_require={
+        'dev': [
+            'flake8',
+        ],
         'tests': tests_require,
     },
     zip_safe=False,

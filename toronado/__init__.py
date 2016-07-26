@@ -20,7 +20,7 @@ if PY3:
     text_type = str
     ifilter = filter
 else:
-    text_type = unicode
+    text_type = unicode  # flake8: noqa
     ifilter = __import__('itertools').ifilter
 
 
@@ -62,9 +62,9 @@ def warn_unsupported_shorthand_property(property):
             "CSS shorthand syntax expansion is not supported for %r. Mixing "
             "shorthand and specific property values (e.g. `font` and `font-size`) "
             "may lead to unexpected results.",
-            name,
+            property,
         )
-        return {name: value}
+        return {property: value}
 
     return expand_property
 
