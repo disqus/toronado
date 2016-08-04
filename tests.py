@@ -8,6 +8,7 @@ from lxml.cssselect import CSSSelector
 from toronado import (
     Properties,
     Rule,
+    compress_box_property,
     expand_shorthand_box_property,
     from_string,
     inline,
@@ -22,6 +23,68 @@ except ImportError:
 
 class TestCase(Exam, unittest.TestCase):
     pass
+
+
+def test_compress_box_property():
+    compress = compress_box_property('margin', 'margin-{}')
+
+    assert compress({
+        'margin-top': '1px',
+        'margin-right': '1px',
+        'margin-bottom': '1px',
+        'margin-left': '1px',
+    }) == {
+        'margin': '1px',
+    }
+
+    assert compress({
+        'margin-top': '1px',
+        'margin-right': '2px',
+        'margin-bottom': '1px',
+        'margin-left': '2px',
+    }) == {
+        'margin': '1px 2px',
+    }
+
+    assert compress({
+        'margin-top': '1px',
+        'margin-right': '2px',
+        'margin-bottom': '3px',
+        'margin-left': '2px',
+    }) == {
+        'margin': '1px 2px 3px',
+    }
+
+    assert compress({
+        'margin-top': '1px',
+        'margin-right': '2px',
+        'margin-bottom': '3px',
+        'margin-left': '4px',
+    }) == {
+        'margin': '1px 2px 3px 4px',
+    }
+
+    assert compress({
+        'margin-top': '1px',
+        'margin-bottom': '1px',
+    }) == {
+        'margin-top': '1px',
+        'margin-bottom': '1px',
+    }
+
+    assert compress({
+        'margin-top': '1px',
+        'margin-right': '1px',
+        'margin-bottom': '1px',
+        'margin-left': '1px',
+        'other-property': 'foo',
+    }) == {
+        'margin': '1px',
+        'other-property': 'foo',
+    }
+
+    properties = {}
+    assert compress(properties) is properties
 
 
 def test_expand_shorthand_box_property():
@@ -112,6 +175,16 @@ class PropertiesTestCase(TestCase):
         ))
 
         self.assertIn('%s' % (properties,), expected)
+
+    def test_compresses_shorthand_properties(self):
+        properties = Properties({
+            'margin-top': '10px',
+            'margin-right': '10px',
+            'margin-bottom': '10px',
+            'margin-left': '10px',
+        })
+
+        assert '%s' % (properties,) == 'margin: 10px'
 
     def test_from_string(self):
         properties = Properties.from_string('color: red; font-weight: bold')

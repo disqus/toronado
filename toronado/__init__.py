@@ -27,8 +27,12 @@ else:
 logger = logging.getLogger(__name__)
 
 
+def expand_box_property_names(template):
+    return list(map(template.format, ('top', 'right', 'bottom', 'left')))
+
+
 def expand_shorthand_box_property(template):
-    sides = ('top', 'right', 'bottom', 'left')
+    names = expand_box_property_names(template)
 
     def expand_property(value):
         bits = value.split()
@@ -44,16 +48,9 @@ def expand_shorthand_box_property(template):
         else:
             raise ValueError('incorrect number of values for box rule: %s' % size)
 
-        return {template.format(side): value for side, value in zip(sides, result)}
+        return {name: value for name, value in zip(names, result)}
 
     return expand_property
-
-
-rewrite_map = {
-    'margin': expand_shorthand_box_property('margin-{}'),
-    'padding': expand_shorthand_box_property('padding-{}'),
-    'border-width': expand_shorthand_box_property('border-{}-width'),
-}
 
 
 def warn_unsupported_shorthand_property(property):
@@ -68,6 +65,35 @@ def warn_unsupported_shorthand_property(property):
 
     return expand_property
 
+
+def compress_box_property(shorthand, template):
+    names = expand_box_property_names(template)
+
+    def compress_property(value):
+        if not set(value).issuperset(set(names)):
+            return value
+
+        top, right, bottom, left = map(value.pop, names)
+
+        if top == right == bottom == left:
+            value[shorthand] = top
+        elif top == bottom and right == left:
+            value[shorthand] = '{} {}'.format(top, right)
+        elif right == left:
+            value[shorthand] = '{} {} {}'.format(top, right, bottom)
+        else:
+            value[shorthand] = '{} {} {} {}'.format(top, right, bottom, left)
+
+        return value
+
+    return compress_property
+
+
+shorthand_box_properties = {
+    'margin': 'margin-{}',
+    'padding': 'padding-{}',
+    'border-width': 'border-{}-width',
+}
 
 unsupported_shorthand_properties = (
     'animation',
@@ -87,12 +113,19 @@ unsupported_shorthand_properties = (
 )
 
 
+expansion_rewrite_map = {}
+property_processors = []
+
+for property, template in shorthand_box_properties.items():
+    expansion_rewrite_map[property] = expand_shorthand_box_property(template)
+    property_processors.append(compress_box_property(property, template))
+
 for property in unsupported_shorthand_properties:
-    rewrite_map[property] = warn_unsupported_shorthand_property(property)
+    expansion_rewrite_map[property] = warn_unsupported_shorthand_property(property)
 
 
-def rewrite_property(property):
-    result = rewrite_map.get(
+def expand_property(property):
+    result = expansion_rewrite_map.get(
         property.name,
         lambda value: {
             property.name: value,
@@ -122,13 +155,17 @@ class Properties(dict):
         Renders the properties as a string suitable for inclusion as a HTML tag
         attribute.
         """
-        return '; '.join(map(': '.join, self.items()))
+        value = self.copy()
+        for processor in property_processors:
+            value = processor(value)
+
+        return '; '.join(map(': '.join, value.items()))
 
     @classmethod
     def from_string(cls, value):
         values = {}
         for property in CSSStyleDeclaration(value).getProperties():
-            values.update(rewrite_property(property))
+            values.update(expand_property(property))
         return cls(values)
 
 
@@ -218,7 +255,7 @@ def inline(tree):
         for rule in ifilter(is_style_rule, stylesheet_parser.parseString(stylesheet.text)):
             properties = {}
             for property in rule.style:
-                properties.update(rewrite_property(property))
+                properties.update(expand_property(property))
 
             # XXX: This doesn't handle selectors with odd multiple whitespace.
             for selector in map(text_type.strip, rule.selectorText.split(',')):
