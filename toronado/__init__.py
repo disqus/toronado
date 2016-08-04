@@ -48,7 +48,7 @@ def expand_shorthand_box_property(template):
         else:
             raise ValueError('incorrect number of values for box rule: %s' % size)
 
-        return {name: value for name, value in zip(names, result)}
+        return dict(zip(names, result))
 
     return expand_property
 
