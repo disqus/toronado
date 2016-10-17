@@ -16,7 +16,7 @@ tests_require = [
 
 setup(
     name='toronado',
-    version='0.0.10',
+    version='0.0.11',
     description='Fast lxml-based CSS stylesheet inliner.',
     author='ted kaemming, disqus',
     author_email='ted@disqus.com',
