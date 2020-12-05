@@ -287,7 +287,7 @@ def inline(tree):
         node.attrib['style'] = '%s' % properties
 
 
-def from_string(string):
+def from_string(string, encoding=None):
     tree = html.document_fromstring(string)
     inline(tree)
-    return html.tostring(tree)
+    return html.tostring(tree, encoding=encoding)
