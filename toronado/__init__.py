@@ -20,7 +20,7 @@ if PY3:
     text_type = str
     ifilter = filter
 else:
-    text_type = unicode  # flake8: noqa
+    text_type = unicode  # noqa: F821
     ifilter = __import__('itertools').ifilter
 
 
