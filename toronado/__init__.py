@@ -20,7 +20,7 @@ if PY3:
     text_type = str
     ifilter = filter
 else:
-    text_type = unicode  # flake8: noqa
+    text_type = unicode  # noqa: F821
     ifilter = __import__('itertools').ifilter
 
 
@@ -287,7 +287,7 @@ def inline(tree):
         node.attrib['style'] = '%s' % properties
 
 
-def from_string(string):
+def from_string(string, encoding=None):
     tree = html.document_fromstring(string)
     inline(tree)
-    return html.tostring(tree)
+    return html.tostring(tree, encoding=encoding)
