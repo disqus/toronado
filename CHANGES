@@ -1,3 +1,9 @@
+0.1.0
+------
+
+- Allow passing encoding through to `html.tostring` when using `from_string`.
+- Start using Semver (https://semver.org/).
+
 0.0.11
 ------
 
